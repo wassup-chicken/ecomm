@@ -36,3 +36,13 @@
 ## Day 2 - 10/23/2025
 
 - Set up gateway service
+- Set up basic handler for Hello and GetProducts that will call Products service
+- Set up clients where handlers will utilize clients to call Products service
+- Use grpc call to products service
+
+## Day 3 - 10/24/2025
+
+- Set up products repo
+- created basic template
+- need to set up proto and spin up grpc server
+- signed up buf registry to maintain proto files
