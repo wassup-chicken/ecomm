@@ -25,6 +25,4 @@ func main() {
 
 		log.Fatal("could not start http server for gateway")
 	}
-
-	log.Println(srv)
 }
