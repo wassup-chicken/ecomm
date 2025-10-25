@@ -46,3 +46,8 @@
 - created basic template
 - need to set up proto and spin up grpc server
 - signed up buf registry to maintain proto files
+
+## Day 4 - 10/25/2025
+
+- Containerized gateway using docker file
+- Should multi-stage this to make it lean
