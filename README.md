@@ -51,3 +51,7 @@
 
 - Containerized gateway using docker file
 - Should multi-stage this to make it lean
+- https://buf.build/docs/bsr/quickstart/#call-apis-with-client-sdks
+  - Makes it easy to import client SDKs to use common protos
+  - Make sure to go mod tidy when links don't resolve
+- Use common folder to define services

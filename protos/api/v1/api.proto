@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+// rename this package name
+package api.v1;
+
+service ProductService {
+    rpc GetProduct (GetProductRequest) returns (GetProductResponse);
+}
+
+message GetProductRequest {
+    string id = 1;
+}
+
+message GetProductResponse {
+    string id = 1;
+    string name = 2;
+    bool success = 3;
+}
