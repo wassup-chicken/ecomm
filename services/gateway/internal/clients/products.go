@@ -4,6 +4,7 @@ import "log"
 
 type ProductsClient interface {
 	GetProducts()
+	GetProduct()
 }
 
 type productClient struct {
@@ -22,4 +23,9 @@ func (c *productClient) GetProducts() {
 	log.Println("hi!, get products called")
 
 	//grpc connection to products service
+
+}
+
+func (c *productClient) GetProduct() {
+	log.Println("hi, get product called")
 }

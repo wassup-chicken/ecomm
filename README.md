@@ -55,3 +55,34 @@
   - Makes it easy to import client SDKs to use common protos
   - Make sure to go mod tidy when links don't resolve
 - Use common folder to define services
+- I was able to set up grpc for products
+- using grpcui --plaintext localhost:8081, i was able to make a call
+- buf.yaml is the configuration file for your proto module
+- buf.gen.yaml is what generates the code locally (creates the gen file)
+- Workflow: `buf lint` -> `buf generate` -> `buf push`
+  - pushes the proto and i will be able to get the following:
+  - "buf.build/gen/go/wassup-chicken/common/protocolbuffers/go/api/v1"
+  - "buf.build/gen/go/wassup-chicken/common/grpc/go/api/v1/apiv1grpc"
+- Proto File
+  ↓
+  ┌─────────────────────────────────────┐
+  │ buf.build/protocolbuffers/go │ ← Message Types (Data)
+  │ - GetProductRequest │
+  │ - GetProductResponse │
+  └─────────────────────────────────────┘
+  ↓
+  ┌─────────────────────────────────────┐
+  │ buf.build/grpc/go │ ← RPC Interfaces (Methods)
+  │ - ProductServiceServer │
+  │ - RegisterProductServiceServer() │
+  └─────────────────────────────────────┘
+- any time there's an update to the proto, we need to run:
+  - buf lint , buf build, buf push
+  - run/ get grpc/go sdk
+  - run/ get protocolbuffers/go
+
+## Day 5 - 10/27/2025
+
+- Set up grpc handlers for GetProduct and GetProducts
+- Did some research on setting up postgres on the products service
+- still need to learn how to query and understand the database url

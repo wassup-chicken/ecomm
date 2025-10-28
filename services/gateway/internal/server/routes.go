@@ -11,7 +11,10 @@ func (srv *GatewayServer) Routes() http.Handler {
 
 	mux.Get("/hello", srv.Hello)
 
+	//get all products
 	mux.Get("/products", srv.GetProducts)
+
+	mux.Get("/products/{id}", srv.GetProduct)
 
 	return mux
 }
