@@ -63,23 +63,33 @@
   - pushes the proto and i will be able to get the following:
   - "buf.build/gen/go/wassup-chicken/common/protocolbuffers/go/api/v1"
   - "buf.build/gen/go/wassup-chicken/common/grpc/go/api/v1/apiv1grpc"
-- Proto File
-  ↓
-  ┌─────────────────────────────────────┐
-  │ buf.build/protocolbuffers/go │ ← Message Types (Data)
-  │ - GetProductRequest │
-  │ - GetProductResponse │
-  └─────────────────────────────────────┘
-  ↓
-  ┌─────────────────────────────────────┐
-  │ buf.build/grpc/go │ ← RPC Interfaces (Methods)
-  │ - ProductServiceServer │
-  │ - RegisterProductServiceServer() │
-  └─────────────────────────────────────┘
-- any time there's an update to the proto, we need to run:
-  - buf lint , buf build, buf push
-  - run/ get grpc/go sdk
-  - run/ get protocolbuffers/go
+- From proto to generated Go packages:
+  - Message types (data): `buf.build/gen/go/wassup-chicken/common/protocolbuffers/go/api/v1`
+    - e.g., `GetProductRequest`, `GetProductResponse`
+  - gRPC server interfaces (methods): `buf.build/gen/go/wassup-chicken/common/grpc/go/api/v1/apiv1grpc`
+    - e.g., `ProductServiceServer`, `RegisterProductServiceServer`
+- When the proto changes, run:
+  - `buf lint`
+  - `buf generate`
+  - `buf push`
+  - update/get deps if needed:
+    - gRPC Go SDK
+    - Protocol Buffers Go
+- Local generation with `buf.gen.yaml` (in this repo):
+
+  - Command: `buf generate` (reads `buf.gen.yaml` and writes to `./gen`)
+  - What gets generated with current config:
+    - `protocolbuffers/go` → `*.pb.go`
+      - contains: message types, enums, and service descriptors
+    - `grpc/go` → `*_grpc.pb.go`
+      - contains: gRPC server/client interfaces and registration functions
+  - Optional: to also generate Connect handlers/clients, add plugin:
+    - `- remote: buf.build/connectrpc/go` (outputs `*_connect.go`)
+
+- File type differences (quick reference):
+  - `*.pb.go` (protocolbuffers): messages, enums, service descriptors; used by both gRPC and Connect
+  - `*_grpc.pb.go` (grpc): gRPC server/client interfaces and registration functions
+  - `*_connect.go` (connectrpc): Connect handlers/clients for HTTP/2 and HTTP/1.1
 
 ## Day 5 - 10/27/2025
 
