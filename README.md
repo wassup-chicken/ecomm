@@ -86,3 +86,18 @@
 - Set up grpc handlers for GetProduct and GetProducts
 - Did some research on setting up postgres on the products service
 - still need to learn how to query and understand the database url
+
+## Day 6 - 10/30/2025
+
+- Created a new package for store to work on postgres
+- Set up basic templates for it
+  - Initializing a connection pool, making it an interface to GetProd and GetProds
+- For next time:
+  - think about environment variables
+  - context , how it should be used
+  - refine gateway services
+- Rules of thumb
+  - Use the handler’s ctx for all work tied to the request.
+  - Add timeouts at the edge (DB calls, outbound RPC).
+  - Never keep a context in a struct field; pass it as a parameter.
+  - Root context is for service lifecycle; request context is for per-request work.

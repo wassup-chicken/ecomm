@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	api "buf.build/gen/go/wassup-chicken/common/protocolbuffers/go/api/v1"
 )
@@ -10,12 +11,15 @@ func (s *ProductsServer) GetProducts(ctx context.Context, req *api.GetProductsRe
 	//returns all products
 	products := []*api.GetProductResponse{}
 
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		products = append(products, &api.GetProductResponse{
-			Id:   string(i),
+			Id:   fmt.Sprintf("%d", i),
 			Name: "yo",
 		})
 	}
+	// get products from postgres
+	s.ProductsStore.GetProducts(ctx)
+
 	return &api.GetProductsResponse{
 		Products: products,
 	}, nil

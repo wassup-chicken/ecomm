@@ -14,7 +14,7 @@ import (
 
 func main() {
 
-	log.Println("hello from products service")
+	log.Println("main file to start the products service, connects to grpc server")
 
 	ps := server.NewProducts()
 
