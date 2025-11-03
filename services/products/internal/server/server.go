@@ -14,9 +14,9 @@ func NewProducts() *ProductsServer {
 	//Initialize Clients if this connects to other apis
 
 	//Initialize database
-	store := store.NewDatabse()
+	productsStore := store.NewStore()
 
 	return &ProductsServer{
-		ProductsStore: store,
+		ProductsStore: productsStore,
 	}
 }

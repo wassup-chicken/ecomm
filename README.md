@@ -111,3 +111,38 @@
   - Add timeouts at the edge (DB calls, outbound RPC).
   - Never keep a context in a struct field; pass it as a parameter.
   - Root context is for service lifecycle; request context is for per-request work.
+
+## Day 7 - 11/03/2025
+
+- Today, I learned about postgres set up and how i can connect to the PostgresSQL server from golang package.
+- PostgreSQL setup:
+  - Server: Postgres.app (PostgreSQL 18.0) running on `localhost:5432`
+  - Database: `products` database exists
+  - Connection string: `postgresql://postgres@localhost:5432/products`
+    - Protocol: `postgresql://`
+    - Username: `postgres`
+    - Host: `localhost`
+    - Port: `5432` (default PostgreSQL port)
+    - Database: `products`
+  - This connects to the Postgres.app server's `products` database
+- psql terminal client:
+  - `psql` is the PostgreSQL command-line client
+  - Available via Homebrew: `/opt/homebrew/opt/postgresql@18/bin/psql`
+  - Available via Postgres.app: `/Applications/Postgres.app/Contents/Versions/latest/bin/psql`
+  - Both clients work with the Postgres.app server - the version difference (client v14/v18 vs server v18) is fine for development
+  - Common psql commands:
+    - `\l` - list all databases
+    - `\dt` - list tables in current database
+    - `\d table_name` - describe table structure
+    - `\c database_name` - switch database
+    - `\q` - quit/exit
+    - Connect: `psql -h localhost -U postgres -d products`
+- Client vs Server:
+  - **Homebrew `postgresql@18`**: Installs both server AND client tools
+  - **Postgres.app**: Server runs on port 5432, client tools bundled in app
+  - **libpq** (Homebrew): Client-only package, no server
+  - Recommendation: Use Postgres.app server, use either client (Homebrew or Postgres.app's)
+
+## Day 8
+
+- Write about grpc connections

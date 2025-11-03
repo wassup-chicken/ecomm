@@ -15,10 +15,13 @@ import (
 func main() {
 
 	log.Println("main file to start the products service, connects to grpc server")
+	// context here for initializing database, server, config, and clients ( to call others )
 
 	ps := server.NewProducts()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", "8081"))
+	defer ps.ProductsStore.Close()
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", "8081"))
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

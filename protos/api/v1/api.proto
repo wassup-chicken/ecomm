@@ -1,7 +1,10 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 // rename this package name
 package api.v1;
+
 
 service ProductService {
     rpc GetProduct (GetProductRequest) returns (GetProductResponse);
@@ -11,16 +14,17 @@ service ProductService {
 message GetProductsRequest {}
 
 message GetProductRequest {
-    string id = 1;
+    int32 id = 1;
 }
 
 message GetProductResponse {
-    string id = 1;
+    int32 id = 1;
     string name = 2;
     bool success = 3;
+    google.protobuf.Timestamp created_at = 4;
+
 }
 
 message GetProductsResponse {
     repeated GetProductResponse products = 1;
 }
-
