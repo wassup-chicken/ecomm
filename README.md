@@ -142,6 +142,12 @@
   - **Postgres.app**: Server runs on port 5432, client tools bundled in app
   - **libpq** (Homebrew): Client-only package, no server
   - Recommendation: Use Postgres.app server, use either client (Homebrew or Postgres.app's)
+- Learn how data is persisted
+  - localhost - on mac machine
+  - cloud - ec2 public dns would be the host
+- Want to explore how to set up a script to write a database table on start up
+  - how to create a table if doesn't exists
+  - how to persist data
 
 ## Day 8
 

@@ -7,20 +7,21 @@ import (
 	"github.com/wassup-chicken/ecomm/services/products/models"
 )
 
-func (s *productStore) GetProduct(ctx context.Context, productId int32) *models.Products {
+func (s *productStore) GetProduct(ctx context.Context, productId int32) (*models.Products, error) {
 	product := &models.Products{}
-	id := 22
-	err := s.dbPool.QueryRow(ctx, "SELECT id, created_at from products where id = $1", id).Scan(&product.ProductID, &product.CreatedAt)
+	err := s.dbPool.QueryRow(ctx, "SELECT id, name, created_at, updated_at from products where id = $1", productId).Scan(&product.ProductID, &product.ProductName, &product.UpdatedAt, &product.CreatedAt)
 
 	if err != nil {
 		log.Println("err running sql", err)
+		return nil, err
 	}
 
 	return &models.Products{
-		ProductID: product.ProductID,
-		CreatedAt: product.CreatedAt,
-		UpdatedAt: product.UpdatedAt,
-	}
+		ProductID:   product.ProductID,
+		ProductName: product.ProductName,
+		CreatedAt:   product.CreatedAt,
+		UpdatedAt:   product.UpdatedAt,
+	}, nil
 }
 
 func (s *productStore) GetProducts(ctx context.Context) []*models.Products {

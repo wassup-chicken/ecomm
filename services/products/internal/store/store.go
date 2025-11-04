@@ -9,7 +9,7 @@ import (
 )
 
 type ProductsStore interface {
-	GetProduct(ctx context.Context, productId int32) *models.Products
+	GetProduct(ctx context.Context, productId int32) (*models.Products, error)
 	GetProducts(ctx context.Context) []*models.Products
 	Close()
 }
