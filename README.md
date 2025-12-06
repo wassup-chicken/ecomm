@@ -149,6 +149,28 @@
   - how to create a table if doesn't exists
   - how to persist data
 
-## Day 8
+## Day 8 12/5/2025
 
-- Write about grpc connections
+- Architecture change: Switching from microservices to monolithic architecture
+  - As a solo engineer, microservices add unnecessary complexity and operational overhead
+  - Goal is to ship a working product and deploy it to the cloud
+  - Focus on learning web application fundamentals rather than distributed systems complexity
+  - Can always refactor into microservices later if needed (strangler pattern)
+  - Future consideration: Break down into services only when there's a clear need (team growth, independent scaling requirements, or well-defined domain boundaries)
+- Tech stack:
+  - **Frontend**: NextJS + Tailwind CSS
+  - **Backend**: Golang (monolithic)
+  - **Database**: PostgreSQL
+  - **Caching**: Redis
+  - **Containerization**: Docker
+  - **Orchestration**: Kubernetes (if needed for scaling)
+  - **Cloud**: GCP or AWS (for hosting)
+  - **API**: HTTP/REST (for frontend-backend communication)
+  - **Monitoring/Logging**: Datadog or similar (mentioned earlier)
+  - **CI/CD**: GitHub Actions or similar (for automated deployments)
+  - **Additional considerations** (to add as needed):
+    - Authentication/Authorization (JWT, OAuth, or session-based)
+    - Payment processing (Stripe, PayPal, etc.)
+    - File storage (S3, Cloud Storage for product images)
+    - Email service (SendGrid, SES for order confirmations, notifications)
+    - Search (Elasticsearch or Algolia for product search - optional initially)
