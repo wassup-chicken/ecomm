@@ -15,8 +15,9 @@ type store struct {
 }
 
 type JobStorer interface {
-	GetJob(ctx context.Context, id string) (*models.Job, error)
+	GetJob(ctx context.Context, id int) (*models.Job, error)
 	GetJobs(ctx context.Context) (*[]models.Job, error)
+	GetUser(ctx context.Context, id int) (*models.User, error)
 }
 
 // initialize the database conection and returns a repo instance
