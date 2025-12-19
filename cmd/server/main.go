@@ -4,14 +4,18 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/wassup-chicken/jobs/internal/handlers"
+	"github.com/wassup-chicken/jobs/internal/server"
 )
 
 func main() {
 
-	err := http.ListenAndServe(":8080", handlers.Routes())
+	log.Println("server starting")
+
+	srv, err := server.New()
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	http.ListenAndServe(":8080", srv.Routes())
 }
