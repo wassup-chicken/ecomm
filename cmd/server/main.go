@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	log.Println("server starting")
 
 	srv, err := server.New()
@@ -17,5 +16,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.ListenAndServe(":8080", srv.Routes())
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: srv.Routes(),
+	}
+
+	err = server.ListenAndServe()
+
+	if err != nil {
+		log.Panic(err)
+	}
 }

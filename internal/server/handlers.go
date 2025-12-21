@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 func (srv *JobServer) GetJobs(w http.ResponseWriter, r *http.Request) {
@@ -94,6 +95,8 @@ func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//probably need a session check here.
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	bs, err := json.Marshal(user)
@@ -105,5 +108,47 @@ func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bs)
+}
 
+type User struct {
+	ID       uuid.UUID `json:"id"`
+	Password string    `json:"password"`
+	Email    string    `json:"email"`
+}
+
+var users = make(map[string]User)
+
+func (srv *JobServer) Register(w http.ResponseWriter, r *http.Request) {
+	log.Println(r)
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	id := uuid.New()
+
+	var user User
+	if _, ok := users[email]; !ok {
+		user = User{
+			ID:       id,
+			Email:    email,
+			Password: password,
+		}
+
+		users[email] = user
+	}
+
+	user = users[email]
+
+	bs, err := json.Marshal(user)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+
+	w.Write(bs)
+}
+
+func (srv *JobServer) Login(w http.ResponseWriter, r *http.Request) {
+	log.Println(r)
 }
