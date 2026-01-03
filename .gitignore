@@ -1,3 +1,7 @@
 *.md
 
 !README.md
+
+fb-sa-jobs-pk.json
+
+*.env

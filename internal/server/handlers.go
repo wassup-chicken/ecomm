@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,15 +12,14 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
+	"github.com/wassup-chicken/jobs/internal/models"
 )
 
 func (srv *JobServer) GetJobs(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
-
 	defer cancel()
 
-	jobs, err := srv.jobStore.GetJobs(ctx)
+	jobs, err := srv.JobStore.GetJobs(ctx)
 
 	if err != nil {
 		log.Println(err)
@@ -47,7 +48,7 @@ func (srv *JobServer) GetJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use the ID from the URL path
-	job, err := srv.jobStore.GetJob(ctx, intId)
+	job, err := srv.JobStore.GetJob(ctx, intId)
 
 	if err != nil {
 		log.Println(err)
@@ -68,10 +69,6 @@ func (srv *JobServer) GetJob(w http.ResponseWriter, r *http.Request) {
 func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	cook, _ := r.Cookie("This is Name")
-
-	log.Println(cook)
-
 	intId, err := strconv.Atoi(id)
 
 	if err != nil {
@@ -83,7 +80,7 @@ func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancel()
 
-	user, err := srv.jobStore.GetUser(ctx, intId)
+	user, err := srv.JobStore.GetUser(ctx, intId)
 
 	if err != nil {
 		log.Println(err)
@@ -110,33 +107,10 @@ func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-type User struct {
-	ID       uuid.UUID `json:"id"`
-	Password string    `json:"password"`
-	Email    string    `json:"email"`
-}
-
-var users = make(map[string]User)
-
 func (srv *JobServer) Register(w http.ResponseWriter, r *http.Request) {
 	log.Println(r)
-	email := r.FormValue("email")
-	password := r.FormValue("password")
 
-	id := uuid.New()
-
-	var user User
-	if _, ok := users[email]; !ok {
-		user = User{
-			ID:       id,
-			Email:    email,
-			Password: password,
-		}
-
-		users[email] = user
-	}
-
-	user = users[email]
+	var user models.User
 
 	bs, err := json.Marshal(user)
 
@@ -150,5 +124,50 @@ func (srv *JobServer) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (srv *JobServer) Login(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	err := srv.Firebase.VerifyIDToken(r.Context(), id)
+
+	if err != nil {
+		log.Println(err)
+
+		return
+	}
+
 	log.Println(r)
+}
+
+func (srv *JobServer) Default(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(`<html><form action="/upload" method="post" enctype="multipart/form-data">
+		<input type="file" id="file" name="resume"><br/>
+		<input type="text" name="url"><br/>
+		<input type="submit" value="Submit" name="submit"><br/>
+	</form> </html>`))
+}
+
+func (srv *JobServer) Upload(w http.ResponseWriter, r *http.Request) {
+
+	file, header, err := r.FormFile("resume")
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer file.Close()
+
+	url := r.FormValue("url")
+
+	bs, err := io.ReadAll(file)
+
+	resumeb64 := base64.StdEncoding.EncodeToString([]byte(bs))
+
+	res, err := srv.LLM.NewChatWithFile(r.Context(), url, resumeb64, header.Filename)
+
+	if err != nil {
+		log.Println(err)
+		io.WriteString(w, err.Error())
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, res)
 }

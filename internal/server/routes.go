@@ -10,15 +10,17 @@ func (srv *JobServer) Routes() http.Handler {
 	mux := chi.NewRouter()
 
 	//middlewares
-	mux.Use(Logger)
-	//jobs
-	mux.Get("/jobs", srv.GetJobs)
-	mux.Get("/jobs/{id}", srv.GetJob)
+	mux.Use(srv.Authenticate)
+	mux.Use(srv.Logger)
+
+	//
+	mux.Get("/", srv.Default)
+	mux.Post("/upload", srv.Upload)
 
 	//users
 	mux.Get("/users/{id}", srv.GetUser)
-	// mux.Post("/users/login", srv.Login)
 	mux.Post("/users/register", srv.Register)
+	mux.Post("/users/login", srv.Login)
 
 	return mux
 }

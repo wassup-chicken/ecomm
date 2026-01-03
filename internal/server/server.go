@@ -1,12 +1,27 @@
 package server
 
-import store "github.com/wassup-chicken/jobs/internal/store"
+import (
+	"github.com/wassup-chicken/jobs/internal/clients"
+	store "github.com/wassup-chicken/jobs/internal/store"
+)
 
 type JobServer struct {
-	jobStore store.JobStorer
+	JobStore store.JobStorer
+	Firebase Auth
+	LLM      clients.LLM
 }
 
 func New() (*JobServer, error) {
+	//initialize firebase app
+	app, err := NewAUth()
+
+	if err != nil {
+		return nil, err
+	}
+
+	//initialize clients
+	openai := clients.NewLLM()
+
 	//initialize database
 	store, err := store.New()
 
@@ -15,6 +30,8 @@ func New() (*JobServer, error) {
 	}
 
 	return &JobServer{
-		jobStore: store,
+		JobStore: store,
+		Firebase: app,
+		LLM:      openai,
 	}, nil
 }
