@@ -15,6 +15,11 @@ import (
 	"github.com/wassup-chicken/jobs/internal/models"
 )
 
+func (srv *JobServer) Ping(w http.ResponseWriter, r *http.Request) {
+	sb, _ := json.Marshal([]byte("PINGED!!"))
+	w.Write(sb)
+}
+
 func (srv *JobServer) GetJobs(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancel()
@@ -136,21 +141,15 @@ func (srv *JobServer) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println(r)
 }
 
-func (srv *JobServer) Default(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(`<html><form action="/upload" method="post" enctype="multipart/form-data">
-		<input type="file" id="file" name="resume"><br/>
-		<input type="text" name="url"><br/>
-		<input type="submit" value="Submit" name="submit"><br/>
-	</form> </html>`))
-}
-
 func (srv *JobServer) Upload(w http.ResponseWriter, r *http.Request) {
+	contentType := r.Header.Get("Content-Type")
+	log.Printf("Upload request Content-Type: %s", contentType)
 
 	file, header, err := r.FormFile("resume")
 
 	if err != nil {
-		log.Println(err)
+		log.Printf("Failed to parse multipart form: %v", err)
+		http.Error(w, "Failed to parse file. Ensure the request is sent as multipart/form-data with a 'resume' field. Error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer file.Close()

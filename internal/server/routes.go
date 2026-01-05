@@ -10,11 +10,12 @@ func (srv *JobServer) Routes() http.Handler {
 	mux := chi.NewRouter()
 
 	//middlewares
+	mux.Use(srv.EnableCORS)
 	mux.Use(srv.Authenticate)
 	mux.Use(srv.Logger)
 
 	//
-	mux.Get("/", srv.Default)
+	mux.Get("/ping", srv.Ping)
 	mux.Post("/upload", srv.Upload)
 
 	//users

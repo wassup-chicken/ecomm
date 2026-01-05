@@ -22,7 +22,7 @@ type JobStorer interface {
 }
 
 // initialize the database conection and returns a repo instance
-func New() (JobStorer, error) {
+func NewStore() (JobStorer, error) {
 	db, err := sql.Open("pgx", os.Getenv("POSTGRES"))
 
 	if err != nil {

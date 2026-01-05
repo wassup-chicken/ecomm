@@ -23,7 +23,7 @@ func New() (*JobServer, error) {
 	openai := clients.NewLLM()
 
 	//initialize database
-	store, err := store.New()
+	store, err := store.NewStore()
 
 	if err != nil {
 		return nil, err

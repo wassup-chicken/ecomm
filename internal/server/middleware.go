@@ -4,7 +4,21 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/cors"
 )
+
+func (srv *JobServer) EnableCORS(next http.Handler) http.Handler {
+	corsOptions := cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173", "https://your-frontend-domain.com"}, // Specify allowed origins
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                   // Specify allowed methods
+		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},                   // Specify allowed headers
+		AllowCredentials: true,                                                                  // Allow cookies, HTTP auth, or client certs (only if precise origins are used)
+		Debug:            true,                                                                  // Enable debugging for testing
+	}
+
+	return cors.New(corsOptions).Handler(next)
+}
 
 func (srv *JobServer) Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,28 +37,13 @@ func (srv *JobServer) Logger(next http.Handler) http.Handler {
 
 func (srv *JobServer) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth := r.Header.Get("Authorization")
-
-		if auth == "" {
-			log.Println("no auth to split")
-
-			// return
-		}
-
+		// TODO: Implement authentication
+		// auth := r.Header.Get("Authorization")
 		// token := strings.Split(auth, " ")
-
-		// if len(token) == 0 {
-		// 	log.Println("no token provided.. either route them to register")
-
-		// 	return
-		// }
 		// err := srv.Firebase.VerifyIDToken(r.Context(), token[1])
-
 		// if err != nil {
-		// 	log.Println("User unauthorized but that's ok for now.. will fix!:", err)
-		// 	// w.WriteHeader(http.StatusUnauthorized)
-		// 	// w.Write([]byte("User unauthorized..!"))
-		// 	// return
+		// 	w.WriteHeader(http.StatusUnauthorized)
+		// 	return
 		// }
 
 		next.ServeHTTP(w, r)
