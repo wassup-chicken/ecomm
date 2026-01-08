@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/cors"
@@ -37,14 +38,19 @@ func (srv *JobServer) Logger(next http.Handler) http.Handler {
 
 func (srv *JobServer) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement authentication
-		// auth := r.Header.Get("Authorization")
-		// token := strings.Split(auth, " ")
-		// err := srv.Firebase.VerifyIDToken(r.Context(), token[1])
-		// if err != nil {
-		// 	w.WriteHeader(http.StatusUnauthorized)
-		// 	return
-		// }
+		auth := r.Header.Get("Authorization")
+
+		if len(auth) == 0 {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		token := strings.Split(auth, " ")
+		err := srv.Firebase.VerifyIDToken(r.Context(), token[1])
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 
 		next.ServeHTTP(w, r)
 	})
