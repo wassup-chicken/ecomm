@@ -15,8 +15,6 @@ func (srv *Server) Routes() http.Handler {
 
 	// Public routes (no authentication)
 	mux.Get("/ping", srv.Ping)
-	mux.Post("/users/register", srv.Register)
-	mux.Post("/users/login", srv.Login)
 
 	// Protected routes (require authentication)
 	mux.Route("/", func(r chi.Router) {
@@ -24,9 +22,6 @@ func (srv *Server) Routes() http.Handler {
 
 		//resume load
 		r.Post("/upload", srv.Upload)
-
-		//users
-		r.Get("/users/{id}", srv.GetUser)
 	})
 
 	return mux

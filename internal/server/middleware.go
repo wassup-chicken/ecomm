@@ -1,12 +1,14 @@
 package server
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/go-chi/cors"
+	"github.com/wassup-chicken/jobs/internal/util"
 )
 
 func (srv *Server) EnableCORS(next http.Handler) http.Handler {
@@ -41,14 +43,14 @@ func (srv *Server) Authenticate(next http.Handler) http.Handler {
 		auth := r.Header.Get("Authorization")
 
 		if len(auth) == 0 {
-			w.WriteHeader(http.StatusUnauthorized)
+			util.ErrorJSON(w, errors.New("authorization token missing"), http.StatusUnauthorized)
 			return
 		}
 
 		token := strings.Split(auth, " ")
 		err := srv.Firebase.VerifyIDToken(r.Context(), token[1])
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
+			util.ErrorJSON(w, err, http.StatusUnauthorized)
 			return
 		}
 
