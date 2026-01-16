@@ -16,7 +16,7 @@ type firebaseApp struct {
 	firebase *firebase.App
 }
 
-func NewAUth() (Auth, error) {
+func NewAuth() (Auth, error) {
 	opt := option.WithCredentialsFile(os.Getenv("FIREBASE"))
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 

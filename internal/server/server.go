@@ -5,15 +5,15 @@ import (
 	store "github.com/wassup-chicken/jobs/internal/store"
 )
 
-type JobServer struct {
+type Server struct {
 	JobStore store.JobStorer
 	Firebase Auth
 	LLM      clients.LLM
 }
 
-func New() (*JobServer, error) {
+func New() (*Server, error) {
 	//initialize firebase app
-	app, err := NewAUth()
+	app, err := NewAuth()
 
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func New() (*JobServer, error) {
 		return nil, err
 	}
 
-	return &JobServer{
+	return &Server{
 		JobStore: store,
 		Firebase: app,
 		LLM:      openai,

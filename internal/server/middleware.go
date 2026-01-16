@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func (srv *JobServer) EnableCORS(next http.Handler) http.Handler {
+func (srv *Server) EnableCORS(next http.Handler) http.Handler {
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173", "https://your-frontend-domain.com"}, // Specify allowed origins
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                   // Specify allowed methods
@@ -21,7 +21,7 @@ func (srv *JobServer) EnableCORS(next http.Handler) http.Handler {
 	return cors.New(corsOptions).Handler(next)
 }
 
-func (srv *JobServer) Logger(next http.Handler) http.Handler {
+func (srv *Server) Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -36,7 +36,7 @@ func (srv *JobServer) Logger(next http.Handler) http.Handler {
 	})
 }
 
-func (srv *JobServer) Authenticate(next http.Handler) http.Handler {
+func (srv *Server) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 

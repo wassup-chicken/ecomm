@@ -34,6 +34,6 @@ func main() {
 	err = server.ListenAndServe()
 
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 }

@@ -6,22 +6,28 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (srv *JobServer) Routes() http.Handler {
+func (srv *Server) Routes() http.Handler {
 	mux := chi.NewRouter()
 
-	//middlewares
+	// Global middlewares (apply to all routes)
 	mux.Use(srv.EnableCORS)
-	mux.Use(srv.Authenticate)
 	mux.Use(srv.Logger)
 
-	//
+	// Public routes (no authentication)
 	mux.Get("/ping", srv.Ping)
-	mux.Post("/upload", srv.Upload)
-
-	//users
-	mux.Get("/users/{id}", srv.GetUser)
 	mux.Post("/users/register", srv.Register)
 	mux.Post("/users/login", srv.Login)
+
+	// Protected routes (require authentication)
+	mux.Route("/", func(r chi.Router) {
+		r.Use(srv.Authenticate)
+
+		//resume load
+		r.Post("/upload", srv.Upload)
+
+		//users
+		r.Get("/users/{id}", srv.GetUser)
+	})
 
 	return mux
 }

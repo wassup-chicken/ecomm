@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -13,72 +14,22 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/wassup-chicken/jobs/internal/models"
+	"github.com/wassup-chicken/jobs/internal/util"
 )
 
-func (srv *JobServer) Ping(w http.ResponseWriter, r *http.Request) {
-	sb, _ := json.Marshal([]byte("PINGED!!"))
-	w.Write(sb)
+func (srv *Server) Ping(w http.ResponseWriter, r *http.Request) {
+	_ = util.WriteJSON(w, http.StatusOK, "PINGED@@@")
+
 }
 
-func (srv *JobServer) GetJobs(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
-	defer cancel()
-
-	jobs, err := srv.JobStore.GetJobs(ctx)
-
-	if err != nil {
-		log.Println(err)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	bs, err := json.Marshal(jobs)
-
-	w.Write(bs)
-}
-
-func (srv *JobServer) GetJob(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
-
-	defer cancel()
-
-	id := chi.URLParam(r, "id")
-
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		log.Println("invalid id format:", err)
-		http.Error(w, "Invalid job ID", http.StatusBadRequest)
-		return
-	}
-
-	// Use the ID from the URL path
-	job, err := srv.JobStore.GetJob(ctx, intId)
-
-	if err != nil {
-		log.Println(err)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	bs, err := json.Marshal(job)
-	if err != nil {
-		log.Println(err)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(bs)
-}
-
-func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	intId, err := strconv.Atoi(id)
 
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "invalid user id!", http.StatusBadRequest)
+		util.ErrorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -97,22 +48,10 @@ func (srv *JobServer) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//probably need a session check here.
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	bs, err := json.Marshal(user)
-
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "error forming json", http.StatusBadRequest)
-		return
-	}
-
-	w.Write(bs)
+	_ = util.WriteJSON(w, http.StatusOK, &user)
 }
 
-func (srv *JobServer) Register(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) Register(w http.ResponseWriter, r *http.Request) {
 	log.Println(r)
 
 	var user models.User
@@ -128,28 +67,34 @@ func (srv *JobServer) Register(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func (srv *JobServer) Login(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	err := srv.Firebase.VerifyIDToken(r.Context(), id)
+func (srv *Server) Login(w http.ResponseWriter, r *http.Request) {
+	auth := r.Header.Get("Authorization")
 
-	if err != nil {
-		log.Println(err)
-
+	if len(auth) == 0 {
+		util.ErrorJSON(w, errors.New("invalid auth"), http.StatusUnauthorized)
 		return
 	}
 
-	log.Println(r)
+	token := strings.Split(auth, " ")[1]
+
+	err := srv.Firebase.VerifyIDToken(r.Context(), token)
+
+	if err != nil {
+		util.ErrorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	util.WriteJSON(w, http.StatusOK, nil)
 }
 
-func (srv *JobServer) Upload(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	log.Printf("Upload request Content-Type: %s", contentType)
 
 	file, header, err := r.FormFile("resume")
 
 	if err != nil {
-		log.Printf("Failed to parse multipart form: %v", err)
-		http.Error(w, "Failed to parse file. Ensure the request is sent as multipart/form-data with a 'resume' field. Error: "+err.Error(), http.StatusBadRequest)
+		util.ErrorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
@@ -158,15 +103,20 @@ func (srv *JobServer) Upload(w http.ResponseWriter, r *http.Request) {
 
 	bs, err := io.ReadAll(file)
 
+	if err != nil {
+		util.ErrorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
 	resumeb64 := base64.StdEncoding.EncodeToString([]byte(bs))
 
 	res, err := srv.LLM.NewChatWithFile(r.Context(), url, resumeb64, header.Filename)
 
 	if err != nil {
-		log.Println(err)
-		io.WriteString(w, err.Error())
+		util.ErrorJSON(w, err, http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, res)
+
+	util.WriteJSON(w, http.StatusOK, res)
+
 }
