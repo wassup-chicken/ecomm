@@ -20,10 +20,6 @@ func New() (*Server, error) {
 	//initialize clients
 	openai := clients.NewLLM()
 
-	if err != nil {
-		return nil, err
-	}
-
 	return &Server{
 		Firebase: app,
 		LLM:      openai,
