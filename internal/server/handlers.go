@@ -40,7 +40,7 @@ func (srv *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	res, err := srv.LLM.NewChatWithFile(r.Context(), url, resumeb64, header.Filename)
 
 	if err != nil {
-		util.ErrorJSON(w, err, http.StatusBadRequest)
+		util.ErrorJSON(w, err)
 		return
 	}
 

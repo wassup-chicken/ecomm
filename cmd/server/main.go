@@ -26,8 +26,24 @@ func main() {
 		return
 	}
 
+	// Support PORT variable (common in cloud platforms like Railway, Render, Fly.io)
+	// Falls back to HOST if PORT is not set
+	port := os.Getenv("PORT")
+	host := os.Getenv("HOST")
+	
+	var addr string
+	if port != "" {
+		addr = ":" + port
+	} else if host != "" {
+		addr = host
+	} else {
+		addr = ":8080" // Default fallback
+	}
+
+	log.Printf("Server starting on %s", addr)
+
 	server := &http.Server{
-		Addr:    os.Getenv("HOST"),
+		Addr:    addr,
 		Handler: srv.Routes(),
 	}
 

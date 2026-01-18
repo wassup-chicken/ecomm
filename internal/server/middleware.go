@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -12,12 +13,29 @@ import (
 )
 
 func (srv *Server) EnableCORS(next http.Handler) http.Handler {
+	// Get allowed origins from environment variable
+	// Format: comma-separated list, e.g., "http://localhost:5173,https://app.example.com"
+	allowedOrigins := []string{"http://localhost:5173"} // Default for local dev
+	
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	if corsOrigins != "" {
+		// Split comma-separated origins and use them
+		origins := strings.Split(corsOrigins, ",")
+		allowedOrigins = make([]string, 0, len(origins))
+		for _, origin := range origins {
+			trimmed := strings.TrimSpace(origin)
+			if trimmed != "" {
+				allowedOrigins = append(allowedOrigins, trimmed)
+			}
+		}
+	}
+
 	corsOptions := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "https://your-frontend-domain.com"}, // Specify allowed origins
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                   // Specify allowed methods
-		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},                   // Specify allowed headers
-		AllowCredentials: true,                                                                  // Allow cookies, HTTP auth, or client certs (only if precise origins are used)
-		Debug:            true,                                                                  // Enable debugging for testing
+		AllowedOrigins:   allowedOrigins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},
+		AllowCredentials: true,
+		Debug:            os.Getenv("DEBUG") == "true", // Only debug if explicitly enabled
 	}
 
 	return cors.New(corsOptions).Handler(next)
