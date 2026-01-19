@@ -10,6 +10,8 @@ type Server struct {
 }
 
 func New() (*Server, error) {
+	//initialize clients
+
 	//initialize firebase app
 	app, err := NewAuth()
 
