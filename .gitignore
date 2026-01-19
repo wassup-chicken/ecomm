@@ -4,3 +4,11 @@
 
 fb-sa-jobs-pk.json
 *.env*
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# Build artifacts (uncomment if you don't want to commit binaries)
+# bin/
+# !bin/application
