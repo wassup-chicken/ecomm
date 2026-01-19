@@ -27,7 +27,7 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr:    os.Getenv("HOST"),
+		Addr:    os.Getenv("PORT"),
 		Handler: srv.Routes(),
 	}
 
