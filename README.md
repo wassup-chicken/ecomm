@@ -118,9 +118,17 @@ jobs-backend/
 │   │   └── server.go        # Server initialization
 │   └── util/
 │       └── utils.go         # Utility functions
+├── .ebextensions/           # Elastic Beanstalk configuration
+│   └── go.config            # EB environment settings
+├── .elasticbeanstalk/       # EB CLI configuration (not in git)
+├── bin/                     # Build output (not in git)
+│   └── application          # Compiled binary for EB
+├── build.sh                 # Build script for Elastic Beanstalk
+├── Procfile                 # Tells EB how to run the app
 ├── Dockerfile               # Docker configuration
 ├── go.mod                   # Go module dependencies
 ├── go.sum                   # Dependency checksums
+├── fb-sa-jobs-pk.json       # Firebase credentials (not in git)
 └── .env                     # Environment variables (not in git)
 ```
 
@@ -206,13 +214,148 @@ curl -X POST http://localhost:8080/upload \
 
 ## Deployment
 
-See the main [DEPLOYMENT.md](../DEPLOYMENT.md) for comprehensive deployment instructions including:
+### AWS Elastic Beanstalk (Current Production Setup)
+
+This backend is currently deployed to AWS Elastic Beanstalk. Here's how to deploy:
+
+#### Prerequisites
+
+1. **Install AWS EB CLI:**
+   ```bash
+   pip3 install awsebcli
+   # Or via Homebrew (macOS):
+   brew install awsebcli
+   ```
+
+2. **Configure AWS credentials:**
+   ```bash
+   aws configure
+   ```
+
+#### Initial Setup
+
+1. **Initialize Elastic Beanstalk:**
+   ```bash
+   cd jobs-backend
+   eb init -p go-1.21 jobs-app-backend --region us-east-2
+   ```
+
+2. **Create environment:**
+   ```bash
+   eb create go-env-jobs
+   ```
+
+#### Building and Deploying
+
+1. **Build the binary:**
+   ```bash
+   ./build.sh
+   ```
+   This creates `bin/application` (Linux binary for EB).
+
+2. **Create deployment package:**
+   ```bash
+   zip -r deploy.zip . \
+     -x "*.git*" \
+     -x "*.env*" \
+     -x "*.md" \
+     -x "!README.md" \
+     -x "build.sh" \
+     -x ".elasticbeanstalk/*" \
+     -x "!.elasticbeanstalk/*.cfg.yml"
+   ```
+   
+   **Important:** Make sure `bin/application` and `Procfile` are included in the zip.
+
+3. **Deploy:**
+   ```bash
+   eb deploy
+   ```
+   
+   Or deploy from zip:
+   ```bash
+   # Upload via AWS Console, or commit to git and use:
+   eb deploy
+   ```
+
+#### Environment Variables
+
+Set environment variables via EB CLI or AWS Console:
+
+```bash
+eb setenv \
+  OPENAI_API_KEY=your_openai_key \
+  FIREBASE=/var/app/current/fb-sa-jobs-pk.json \
+  CORS_ORIGINS=https://your-frontend-url.com
+```
+
+**Via AWS Console:**
+1. Go to Elastic Beanstalk → Your environment
+2. Configuration → Software → Environment properties
+3. Add/Edit environment variables
+
+#### Firebase Credentials
+
+The Firebase service account file must be included in your deployment:
+
+1. **Option 1: Include in deployment zip**
+   - Add `fb-sa-jobs-pk.json` to your deployment zip
+   - Set `FIREBASE=/var/app/current/fb-sa-jobs-pk.json`
+
+2. **Option 2: Upload to S3 and use `.ebextensions`**
+   - Upload `fb-sa-jobs-pk.json` to S3
+   - Create `.ebextensions/firebase.config`:
+     ```yaml
+     files:
+       "/var/app/current/fb-sa-jobs-pk.json":
+         mode: "000644"
+         owner: root
+         group: root
+         source: https://your-bucket.s3.us-east-2.amazonaws.com/fb-sa-jobs-pk.json
+     ```
+
+#### Required Files
+
+Make sure these files are in your deployment:
+- `bin/application` - The compiled binary (created by `build.sh`)
+- `Procfile` - Tells EB how to run the app: `web: bin/application`
+- `fb-sa-jobs-pk.json` - Firebase credentials (if including directly)
+
+#### CloudFront Setup (HTTPS)
+
+The backend is behind CloudFront for HTTPS:
+
+1. **Create CloudFront Distribution:**
+   - Origin: Your Elastic Beanstalk URL
+   - Origin protocol: **HTTP Only** (EB uses HTTP, not HTTPS)
+   - Viewer protocol: Redirect HTTP to HTTPS
+
+2. **Configure Behaviors:**
+   - Cache policy: `CachingDisabled` (for API endpoints)
+   - Origin request policy: `AllViewer` (forwards all headers)
+   - Response headers policy: None (let backend handle CORS)
+
+3. **Update frontend:**
+   - Set `VITE_API_URL` to your CloudFront URL
+
+#### Troubleshooting
+
+- **"no application binary found"**: Make sure `bin/application` exists and is in the deployment zip
+- **"no Procfile found"**: Ensure `Procfile` is in the root directory
+- **Firebase credential errors**: Verify `FIREBASE` env var path and file exists
+- **CORS errors**: Check `CORS_ORIGINS` includes your frontend URL
+
+See [ELASTIC_BEANSTALK_SETUP.md](./ELASTIC_BEANSTALK_SETUP.md) for detailed troubleshooting.
+
+#### Other Deployment Options
+
+See the main [DEPLOYMENT.md](../DEPLOYMENT.md) for other platforms:
 - Railway
 - Render
 - Fly.io
-- AWS (Elastic Beanstalk, ECS, EC2)
-- Google Cloud Platform (Cloud Run, Compute Engine, App Engine)
-- Microsoft Azure (App Service, Container Instances, VMs)
+- AWS ECS/EC2
+- Google Cloud Platform
+- Microsoft Azure
 
 ## Troubleshooting
 
