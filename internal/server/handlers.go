@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -44,6 +45,14 @@ func (srv *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.WriteJSON(w, http.StatusOK, res)
+	// res is already a JSON string from the LLM, parse it first to avoid double-encoding
+	var parsedRes map[string]any
+	if err := json.Unmarshal([]byte(res), &parsedRes); err != nil {
+		// If parsing fails, return the string as-is (fallback)
+		util.WriteJSON(w, http.StatusOK, res)
+		return
+	}
+
+	util.WriteJSON(w, http.StatusOK, parsedRes)
 
 }
