@@ -13,11 +13,11 @@ import (
 
 func (srv *Server) EnableCORS(next http.Handler) http.Handler {
 	corsOptions := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "https://prep-jobs-ai.vercel.app/resume"}, // Specify allowed origins
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                         // Specify allowed methods
-		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},                         // Specify allowed headers
-		AllowCredentials: true,                                                                        // Allow cookies, HTTP auth, or client certs (only if precise origins are used)
-		Debug:            true,                                                                        // Enable debugging for testing
+		AllowedOrigins:   []string{"http://localhost:5173", "https://prep-jobs-ai.vercel.app"}, // Specify allowed origins
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                  // Specify allowed methods
+		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},                  // Specify allowed headers
+		AllowCredentials: true,                                                                 // Allow cookies, HTTP auth, or client certs (only if precise origins are used)
+		Debug:            true,                                                                 // Enable debugging for testing
 	}
 
 	return cors.New(corsOptions).Handler(next)
